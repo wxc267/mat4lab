@@ -53,16 +53,16 @@ void main(void) {
     <button  onclick="obj('all')"> All</button>
     <h4>Legs:</h4>
     <button onclick="obj('legs')">All Legs</button>
-    <button onlick="obj('feet')">All feet</button>
+    <button onclick="obj('feet')">All feet</button>
     <h5>First Row:<h5>
     <button onclick="obj('leg1')">Legs</button>
-    <button onlick="obj('feet1')">feet</button>
+    <button onclick="obj('feet1')">feet</button>
     <h5>Second Row:<h5>
     <button onclick="obj('leg2')">Legs</button>
-    <button onlick="obj('feet2')">feet</button>
+    <button onclick="obj('feet2')">feet</button>
     <h5>Third Row:<h5>
     <button onclick="obj('leg3')">Legs</button>
-    <button onlick="obj('feet3')">feet</button>
+    <button onclick="obj('feet3')">feet</button>
     <h3>Pliers:<h4>
     <button onclick="obj('pliers')">Pliers</button>
 

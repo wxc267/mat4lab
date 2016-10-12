@@ -1,0 +1,49 @@
+Overview:
+The scene is about the crab on the sand. The background is sand. It also has some decorations such as a sea star and a shell. The user could rotate the crab either with mouse(unanimated) and the keyboard(animated). Meanwhile, the user could move/scale the objects with keyboard. To see the parts of the scene, a screenshot is included. The objects has 3 layers. Body, Laps and feet. The feet depends on the laps and the laps depends on the body. The pliers depends on the body too. Thus, the crab has 8 branches.
+
+Dependency:
+The dependency will same as this:
+Left front foot-> Left front leg -> Body
+Right front foot-> Right front leg -> Body
+Left middle foot-> Left middle leg -> Body
+Right middle foot-> Right middle leg -> Body
+Left back foot-> Left back leg -> Body
+Right back foot-> Right back leg -> Body
+Left plier -> Body
+Right plier ->Body
+
+How to run program:
+1. Open the file lab2.html with browser. Firefox is recommended. 
+
+Notification:
+The inital face of the crab was down. Therefore, press "F" will move the crab down since the front of the crab in the initial place is down.
+The front of the crab is the direction which has the pliers.
+
+
+Control Keys:
+	Movement:
+		+"F" - Move the crab to front
+		+"B" - Move the crab to the backward
+		+"L" - Move the crab to left
+		+"R" - Move the crab to Right
+	Scale:
+		+"A" - Make the selected item and its children larger
+		+"S" - Make the selected item and its children smaller
+	Rotation:
+		+Click, hold the mouse left button and move the mouse.
+
+How to Rotate and select the item:
+Scroll down the web page. Multiple parts of the crab could be found. Select one of them tag, the selected parts and their children could be rotated with mouse. Without selection, the default part is the whole crab.
+
+
+Bonus tasks:
+I implemented the animated rotation for the crab:
+	"Q" - Make the crab rotate counterclockwise with animation
+	"W" - Make the crab rotate clockwise with animation
+
+
+Develop Environment:
+OS: Ubuntu
+Browser: Firefox
+
+The program is also tested under Windows 8 and it works fine.
