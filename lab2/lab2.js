@@ -709,16 +709,64 @@ var seaStarMatrix,shellMatrix;
 		break;
 		case 76:
 		//press L to move left
-		bodyMatrix = mat4.translate(bodyMatrix, [-0.1, 0, 0]);	
+		bodyMatrix = mat4.translate(bodyMatrix, [0.1, 0, 0]);	
 		break;
 		case 82:
 		//press R to move right
-		bodyMatrix = mat4.translate(bodyMatrix, [0.1, 0, 0]);	
+		bodyMatrix = mat4.translate(bodyMatrix, [-0.1, 0, 0]);	
+		break;
+		case 81:
+		//press Q to rotate counterclockwisely with animation
+		bodyMatrix=mat4.rotate(bodyMatrix,degToRad(1),[0,0,1]);
+		rotateAnimation();
+		break;
+		case 87:
+		//press W to rotate clockwisely with animation
+		bodyMatrix=mat4.rotate(bodyMatrix,degToRad(-1),[0,0,1]);
+		rotateAnimation();
 		break;
 	}
 	drawScene();
  
     }
+
+    //////////////////////////////Animations///////////
+    var max_rotate_degree=10;//the max degree that the limbs can rotate.
+    var rotated_degree=0;//indicating the degree that the limbs have rotated.
+    var degree_plus=1;//1 means the limbs rotate forward. -1 means the limbs rotate backward.
+    function rotateAnimation()
+    {
+	
+	var crabLimbs=[lap1LeftMatrix,foot1LeftMatrix, lap1RightMatrix, foot1RightMatrix,lap2LeftMatrix,lap2RightMatrix,
+			lap3LeftMatrix,lap3RightMatrix,foot2LeftMatrix,foot3LeftMatrix, foot2RightMatrix, 
+			foot3RightMatrix,plierLeftMatrix,plierRightMatrix];
+	if(degree_plus==1)
+	{
+		rotated_degree++;
+		if(rotated_degree>10)
+		{
+			degree_plus=-1;
+		}
+
+	}
+	else
+	{
+		rotated_degree--;
+		if(rotated_degree<0)
+		{
+			degree_plus=1;
+		}		
+	}
+	for(var i=0;i<crabLimbs.length;i++)
+	{
+		crabLimbs[i]=mat4.rotate(crabLimbs[i],degToRad(degree_plus),[0,0,1]);
+
+	}
+
+    }
+
+
+
     ///////////////////////////////////////////////////////////////
 
     function webGLStart() {
@@ -806,7 +854,7 @@ var seaStarMatrix,shellMatrix;
 	shellMatrix=mat4.create();
 	mat4.identity(shellMatrix);
 	
-	initialMvMatrix()	
+	initialMvMatrix();	
         drawScene();
     }
 
@@ -830,6 +878,7 @@ function redraw() {
     mat4.identity(plierRightMatrix);
     mat4.identity(seaStarMatrix); 
     mat4.identity(shellMatrix);
+    initialMvMatrix();
     drawScene();
 }
 
