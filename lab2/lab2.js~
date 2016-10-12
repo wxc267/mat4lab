@@ -1,0 +1,841 @@
+
+    var gl;
+    var shaderProgram;
+var which_object = "all"; 
+var SCALE_LARGE=[1.05, 1.05, 1.05];
+var SCALE_SMALL=[0.95, 0.95, 0.95];
+
+//////////// Init OpenGL Context etc. ///////////////
+
+    function initGL(canvas) {
+        try {
+            gl = canvas.getContext("experimental-webgl");
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        } catch (e) {
+        }
+        if (!gl) {
+            alert("Could not initialise WebGL, sorry :-(");
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    //the buffer for the main object
+    var lap1VertexPositionBuffer;
+    var squareVertexColorBuffer;
+    var lap2VertexPositionBuffer;
+    var lap3VertexPositionBuffer;
+    var foot1VertexPositionBuffer;
+    var foot2VertexPositionBuffer;
+    var foot3VertexPositionBuffer;
+    var footVertexColorBuffer;
+    var circleVertexPositionBuffer;
+    var circleVertexColorBuffer;
+    var plierVertexPositionBuffer;
+    var plierVertexColorBuffer;
+
+   //the buffer for static object/decoration
+   var seaStarVertexPositionBuffer;
+   var seaStarVertexColorBuffer;
+   var shellVertexPositionBuffer;
+   var shellVertexPositionBuffer;
+
+   ////////////////    Initialize VBO  ////////////////////////
+
+    function initLapBuffer() {
+	//bind the sqaure 
+        var position = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, position);
+	var vertices=[
+		0.2,  0.05,  0.0,
+		-0.2,  0.05,  0.0,
+	        -0.2, -0.05,  0.0, 
+		0.2, -0.05,  0.0,];
+	var colors=[
+		0.75, 0.5, 0.0, 1.0,
+		0.75, 0.5, 0.0, 1.0,
+		0.75, 0.5, 0.0, 1.0,
+		0.75, 0.5, 0.0, 1.0,];
+	
+        
+
+
+	
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        position.itemSize = 3;
+        position.numItems = 4;
+
+
+
+
+	//bind square colors
+        squareVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        squareVertexColorBuffer.itemSize = 4;
+        squareVertexColorBuffer.numItems = 4;
+
+	return position;
+	
+    }
+    function initPliersBuffer() {
+	//bind the sqaure 
+        var position = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, position);
+	var vertices=[
+		0.2,  0.05,  0.0,
+		-0.2,  0.05,  0.0,
+		-0.13,0.0,0.0,
+	        -0.2, -0.05,  0.0, 
+		0.2, -0.05,  0.0,];
+	var colors=[
+		0.75, 0.7, 0.0, 1.0,
+		0.75, 0.7, 0.0, 1.0,
+		0.75, 0.7, 0.0, 1.0,
+		0.75, 0.7, 0.0, 1.0,
+		0.75, 0.7, 0.0, 1.0,];
+	
+        
+
+
+	
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        position.itemSize = 3;
+        position.numItems = 5;
+
+
+
+
+	//bind square colors
+        plierVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, plierVertexColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        plierVertexColorBuffer.itemSize = 4;
+        plierVertexColorBuffer.numItems = 5;
+
+	return position;
+	
+    }
+
+    function initFootBuffer() {
+	//bind the sqaure 
+        var position = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, position);
+	var vertices=[
+		0.2,  0.03,  0.0,
+		-0.17,  0.03,  0.0,
+		-0.2,0.0,0.0,
+	        -0.17, -0.03,  0.0, 
+		0.2, -0.03,  0.0,
+		];
+	var colors=[
+		0.9, 0.3, 0.0, 1.0,
+		0.9, 0.3, 0.0, 1.0,
+		0.9, 0.3, 0.0, 1.0,
+		0.9, 0.3, 0.0, 1.0,
+		0.9, 0.3, 0.0, 1.0];
+	
+        
+
+
+	
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        position.itemSize = 3;
+        position.numItems = 5;
+
+
+
+
+	//bind square colors
+        footVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, footVertexColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        footVertexColorBuffer.itemSize = 4;
+        footVertexColorBuffer.numItems = 5;
+
+	return position;
+	
+    }
+
+
+    function initBodyBuffer()
+    {
+
+
+	//build circle(as the body)
+	
+	circleVertexPositionBuffer=gl.createBuffer();
+
+	gl.bindBuffer(gl.ARRAY_BUFFER,circleVertexPositionBuffer);
+	//number of the vertices to construct the circle
+	var num_vertices=50;
+	var radius=0.4;
+	var circle_vertices=[];
+	var circle_colors=[];
+
+	var degree_in_rad=360/num_vertices*Math.PI/180.0;
+	
+	for(var i=0;i<num_vertices;i++)
+	{
+		circle_vertices.push(radius*Math.sin(degree_in_rad*i));
+		circle_vertices.push(radius*Math.cos(degree_in_rad*i));
+		circle_vertices.push(0.0);
+		circle_colors.push(0.5);circle_colors.push(0.3);
+		circle_colors.push(0.0);circle_colors.push(1.0);
+		
+	}
+	
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(circle_vertices), gl.STATIC_DRAW);
+        circleVertexPositionBuffer.itemSize = 3;
+        circleVertexPositionBuffer.numItems = num_vertices;
+
+	//build circle color
+	
+	circleVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, circleVertexColorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(circle_colors), gl.STATIC_DRAW);
+        circleVertexColorBuffer.itemSize = 4;
+        circleVertexColorBuffer.numItems = num_vertices;
+
+    }
+
+    function initSeaStarBuffer()
+    {
+	seaStarVertexPositionBuffer=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER,seaStarVertexPositionBuffer);
+	var num_vertices=14;
+	var num_star=10;
+	var large_radius=0.3;
+	var small_radius=0.2;
+	var degree_in_rad=(360/num_star)*(Math.PI/180.0);
+	//the center point will be white.
+	var position=[0,0,0];
+	var color=[1,1,1,1];
+	for(var i=0;i<num_star;i++)
+	{
+		if(i%2==0){
+			position.push(large_radius*Math.sin(degree_in_rad*i));
+			position.push(large_radius*Math.cos(degree_in_rad*i));
+		}
+		else{
+			position.push(small_radius*Math.sin(degree_in_rad*i));
+			position.push(small_radius*Math.cos(degree_in_rad*i));
+		}
+		position.push(0.0);
+		color.push(0.9);color.push(0.0);
+		color.push(0.0);color.push(1.0);
+		
+	}
+	//add a triangle to fill the blank
+	position=position.concat([0,0,0,
+				  large_radius*Math.sin(degree_in_rad*0),large_radius*Math.cos(degree_in_rad*0),0,
+				  small_radius*Math.sin(degree_in_rad*(num_star-1)),small_radius*Math.cos(degree_in_rad*(num_star-1)),0,
+				]);
+	color=color.concat([1,1,1,1,
+			    0.9,0,0,1,
+			    0.9,0,0,1,
+			   ]);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(position), gl.STATIC_DRAW);
+        seaStarVertexPositionBuffer.itemSize = 3;
+        seaStarVertexPositionBuffer.numItems = num_vertices;
+
+	//build circle color
+	
+	seaStarVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, seaStarVertexColorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
+        seaStarVertexColorBuffer.itemSize = 4;
+        seaStarVertexColorBuffer.numItems = num_vertices;
+
+
+
+
+     }
+
+    function initShellBuffer()
+    {
+	shellVertexPositionBuffer=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER,shellVertexPositionBuffer);
+	var num_vertices=15;
+	var num_circle_vertices=10;
+	var position=[  0.0,-0.05,0.0,
+			-0.1,-0.05,0,
+			-0.1,0.0,0
+		];
+	var color=[0.9,0.7,0.7,1.0,
+		0.9,0.7,0.7,1.0,
+		0.9,0.7,0.7,1.0];
+	var radius=0.25;
+	var degree_in_rad=(135/num_circle_vertices)*(Math.PI/180.0);
+	var begin_degree=-60;
+	var begin_rad=begin_degree*(Math.PI/180.0);
+	
+	for(var i=0;i<num_circle_vertices;i++)
+	{
+		
+		position.push(radius*Math.sin(begin_rad+degree_in_rad*i));
+		position.push(radius*Math.cos(begin_rad+degree_in_rad*i));
+		position.push(0.0);
+		if(i!=0&&i!=num_circle_vertices-1){
+			color.push(0.5);color.push(0.2);
+			color.push(0.2);color.push(1);
+		}else
+		{
+			color.push(1);color.push(1);
+			color.push(1);color.push(1.0);
+		}
+		
+	}
+	
+	position=position.concat([0.1,0.0,0,
+			0.1,-0.05,0]);
+	color=color.concat([0.9,0.7,0.7,1.0,
+		0.9,0.7,0.7,1.0]);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(position), gl.STATIC_DRAW);
+        shellVertexPositionBuffer.itemSize = 3;
+        shellVertexPositionBuffer.numItems = num_vertices;
+
+	//build shell color
+	
+	shellVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, shellVertexColorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
+        shellVertexColorBuffer.itemSize = 4;
+        shellVertexColorBuffer.numItems = num_vertices;
+
+
+
+
+     }
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+
+
+var bodyMatrix, lap1LeftMatrix, foot1LeftMatrix, lap1RightMatrix, foot1RightMatrix,lap2LeftMatrix,lap2RightMatrix;
+var lap3LeftMatrix,lap3RightMatrix,foot2LeftMatrix,foot3LeftMatrix, foot2RightMatrix, foot3RightMatrix;
+var plierLeftMatrix,plierRightMatrix;
+var seaStarMatrix,shellMatrix;
+
+    function initialMvMatrix()
+    {
+	//adjust the initial position of the laps
+	lap1LeftMatrix = mat4.translate(lap1LeftMatrix, [-0.4, 0.3, 0]);
+	lap1RightMatrix = mat4.translate(lap1RightMatrix, [0.4, 0.3, 0]);
+	lap2LeftMatrix = mat4.translate(lap2LeftMatrix, [-0.55, 0.1, 0]);
+	lap2RightMatrix = mat4.translate(lap2RightMatrix, [0.55, 0.1, 0]);
+	lap3LeftMatrix = mat4.translate(lap3LeftMatrix, [-0.52,-0.1, 0]);
+	lap3RightMatrix = mat4.translate(lap3RightMatrix, [0.52,- 0.1, 0]);
+
+
+	//adjust the initial position of the feet
+	foot1LeftMatrix = mat4.translate(foot1LeftMatrix, [-0.3, 0.0, 0]);
+	foot1RightMatrix = mat4.translate(foot1RightMatrix, [0.3, 0.0, 0]);
+	foot2LeftMatrix = mat4.translate(foot2LeftMatrix, [-0.3, 0.0, 0]);
+	foot2RightMatrix = mat4.translate(foot2RightMatrix, [0.3, 0.0, 0]);
+	foot3LeftMatrix = mat4.translate(foot3LeftMatrix, [-0.3,-0.0, 0]);
+	foot3RightMatrix = mat4.translate(foot3RightMatrix, [0.3,- 0.0, 0]);
+
+	//adjust the initial rotation of the right feet
+	foot1RightMatrix=mat4.rotate(foot1RightMatrix,degToRad(180),[0,0,1]);
+	foot2RightMatrix=mat4.rotate(foot2RightMatrix,degToRad(180),[0,0,1]);
+	foot3RightMatrix=mat4.rotate(foot3RightMatrix,degToRad(180),[0,0,1]);
+
+
+	//adjust the pliers position
+	plierLeftMatrix=mat4.translate(plierLeftMatrix,[-0.3,-0.4,0]);
+	plierRightMatrix=mat4.translate(plierRightMatrix,[0.3,-0.4,0]);
+
+	//adjust the rotation of the pliers
+	plierLeftMatrix=mat4.rotate(plierLeftMatrix,degToRad(90),[0,0,1]);
+	plierRightMatrix=mat4.rotate(plierRightMatrix,degToRad(90),[0,0,1]);
+
+
+	//inital the position of the sea star
+	seaStarMatrix=mat4.translate(seaStarMatrix,[-0.5,-0.5,0]);
+
+
+	//inital the position of the shell
+	shellMatrix=mat4.translate(shellMatrix,[0.3,0.7,0]);
+	shellMatrix=mat4.rotate(shellMatrix,degToRad(180),[0,0,1]);
+    }
+    
+    var Xtranslate = 0.0, Ytranslate = 0.0; 
+
+    function setMatrixUniforms(matrix) {
+        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, matrix);
+    }
+
+     function degToRad(degrees) {
+        return degrees * Math.PI / 180;
+     }
+
+///////////////////////////////////////////////////////
+
+    var mvMatrixStack = [];
+
+    function PushMatrix(matrix) {
+        var copy = mat4.create();
+        mat4.set(matrix, copy);
+        mvMatrixStack.push(copy);
+    }
+
+    function PopMatrix() {
+        if (mvMatrixStack.length == 0) {
+            throw "Invalid popMatrix!";
+        }
+        var copy = mvMatrixStack.pop();
+	return copy; 
+    }
+
+
+
+   //draw the object, color is the color buffer. position is the position buffer
+   function draw_object(matrix,positionBuffer,color)
+   {
+	setMatrixUniforms(matrix);
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, positionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, color);
+        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute,color.itemSize,gl.FLOAT,false, 0, 0);
+	gl.drawArrays(gl.TRIANGLE_FAN, 0, positionBuffer.numItems);
+
+   }
+///////////////////////////////////////////////////////////////////////
+
+    function drawScene() {
+
+
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+	//the model for the decoration
+	var seaStarModel=mat4.create();
+	mat4.identity(seaStarModel);
+	seaStarModel=mat4.multiply(seaStarModel,seaStarMatrix);
+	draw_object(seaStarModel,seaStarVertexPositionBuffer,seaStarVertexColorBuffer);
+	var shellModel=mat4.create();
+	mat4.identity(shellModel);
+	shellModel=mat4.multiply(shellModel,shellMatrix);
+	draw_object(shellModel,shellVertexPositionBuffer,shellVertexColorBuffer);
+
+	// the model for the main object
+	var Mstack = new Array(); 
+        var model = mat4.create(); 
+	
+	mat4.identity(model);
+	
+
+	////////////////////  the body 
+	
+        model = mat4.multiply(model, bodyMatrix); 
+	draw_object(model,circleVertexPositionBuffer,circleVertexColorBuffer);
+
+	PushMatrix(model); 
+	PushMatrix(model);
+	PushMatrix(model);
+	PushMatrix(model); 
+	PushMatrix(model);
+	PushMatrix(model);
+	PushMatrix(model);
+
+	/////////////////////   the branch of leg1 left
+        model = mat4.multiply(model, lap1LeftMatrix); 
+	draw_object(model,lap1VertexPositionBuffer,squareVertexColorBuffer);
+
+        model = mat4.multiply(model, foot1LeftMatrix); 
+	draw_object(model,foot1VertexPositionBuffer,footVertexColorBuffer);
+
+	/////////////////////   the branch of leg1 right
+	model = PopMatrix();
+	
+	
+	model = mat4.multiply(model, lap1RightMatrix); 
+	draw_object(model,lap1VertexPositionBuffer,squareVertexColorBuffer);
+
+	model = mat4.multiply(model, foot1RightMatrix); 
+	draw_object(model,foot1VertexPositionBuffer,footVertexColorBuffer);
+	
+	////////////////////	the branch of leg2 left
+	model = PopMatrix();
+
+	model=mat4.multiply(model,lap2LeftMatrix);
+	draw_object(model,lap2VertexPositionBuffer,squareVertexColorBuffer);
+        model = mat4.multiply(model, foot2LeftMatrix); 
+	draw_object(model,foot2VertexPositionBuffer,footVertexColorBuffer);
+
+
+	///////////////////	the branch of leg2 right
+	model = PopMatrix();
+	model=mat4.multiply(model,lap2RightMatrix);
+	draw_object(model,lap2VertexPositionBuffer,squareVertexColorBuffer);
+	model = mat4.multiply(model, foot2RightMatrix); 
+	draw_object(model,foot2VertexPositionBuffer,footVertexColorBuffer);
+
+	////////////////////	the branch of leg3 left
+	model = PopMatrix();
+
+	model=mat4.multiply(model,lap3LeftMatrix);
+	draw_object(model,lap3VertexPositionBuffer,squareVertexColorBuffer);
+        model = mat4.multiply(model, foot3LeftMatrix); 
+	draw_object(model,foot3VertexPositionBuffer,footVertexColorBuffer);
+
+
+	///////////////////	the branch of leg3 right
+	model = PopMatrix();
+	model=mat4.multiply(model,lap3RightMatrix);
+	draw_object(model,lap3VertexPositionBuffer,squareVertexColorBuffer);
+	model = mat4.multiply(model, foot3RightMatrix); 
+	draw_object(model,foot3VertexPositionBuffer,footVertexColorBuffer);
+
+	//////////////////	the branch of the left plier
+	model = PopMatrix();
+	model=mat4.multiply(model,plierLeftMatrix);
+	draw_object(model,plierVertexPositionBuffer,plierVertexColorBuffer);
+
+	//////////////////	the branch of the right plier
+	model = PopMatrix();
+	model=mat4.multiply(model,plierRightMatrix);
+	draw_object(model,plierVertexPositionBuffer,plierVertexColorBuffer);
+
+    }
+
+
+    ///////////////////////////////////////////////////////////////
+
+    var lastMouseX = 0, lastMouseY = 0;
+
+
+    ///////////////////////////////////////////////////////////////
+
+     function onDocumentMouseDown( event ) {
+          event.preventDefault();
+          document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+          document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+          document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+          var mouseX = event.clientX;
+          var mouseY = event.clientY;
+
+          lastMouseX = mouseX;
+          lastMouseY = mouseY; 
+
+      }
+
+     function onDocumentMouseMove( event ) {
+          var mouseX = event.clientX;
+          var mouseY = event.ClientY; 
+
+          var diffX = mouseX - lastMouseX;
+          var diffY = mouseY - lastMouseY;
+
+	 
+	 if (which_object === "all") 
+	     bodyMatrix = mat4.rotate(bodyMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	 if (which_object === "leg1"||which_object==="legs")  {
+	     lap1LeftMatrix = mat4.rotate(lap1LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     lap1RightMatrix = mat4.rotate(lap1RightMatrix, degToRad(-1*diffX/5.0), [0, 0, 1]);	     
+	    
+	
+	 }
+	if(which_object==="leg2"||which_object==="legs")
+	{
+	     lap2LeftMatrix = mat4.rotate(lap2LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     lap2RightMatrix = mat4.rotate(lap2RightMatrix, degToRad(-1*diffX/5.0), [0, 0, 1]);	
+
+	}
+
+	if(which_object==="leg3"||which_object==="legs")
+	{
+		 lap3LeftMatrix = mat4.rotate(lap3LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     lap3RightMatrix = mat4.rotate(lap3RightMatrix, degToRad(-1*diffX/5.0), [0, 0, 1]);	
+	}
+
+	if(which_object==="pliers")
+	{
+
+	     plierLeftMatrix = mat4.rotate(plierLeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     plierRightMatrix = mat4.rotate(plierRightMatrix, degToRad(-1*diffX/5.0), [0, 0, 1]);
+
+	}
+
+	 if (which_object === "feet1"||which_object==="feet")  {
+	     foot1LeftMatrix = mat4.rotate(foot1LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     foot1RightMatrix = mat4.rotate(foot1RightMatrix, -1*degToRad(diffX/5.0), [0, 0, 1]);
+
+	     
+	 }
+	if(which_object === "feet2"||which_object==="feet")
+	{
+	     foot2LeftMatrix = mat4.rotate(foot2LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     foot2RightMatrix = mat4.rotate(foot2RightMatrix, -1*degToRad(diffX/5.0), [0, 0, 1]);
+	}
+	if(which_object==="feet3"||which_object==="feet")
+	{
+	     foot3LeftMatrix = mat4.rotate(foot3LeftMatrix, degToRad(diffX/5.0), [0, 0, 1]);
+	     foot3RightMatrix = mat4.rotate(foot3RightMatrix, -1*degToRad(diffX/5.0), [0, 0, 1]);
+	}
+	 
+          lastMouseX = mouseX;
+          lastMouseY = mouseY;
+
+          drawScene();
+     }
+
+     function onDocumentMouseUp( event ) {
+          document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+          document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+          document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+     }
+
+     function onDocumentMouseOut( event ) {
+          document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+          document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+          document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+     }
+
+
+    function onKeyDown(event) {
+	switch(event.keyCode)
+	{
+ 		case 65:
+              //press a to make larger
+		  if (which_object === "all")  {
+		      bodyMatrix = mat4.scale(bodyMatrix, SCALE_LARGE);
+		  }
+		  if (which_object === "leg1"||which_object==="legs") {
+		      lap1LeftMatrix = mat4.scale(lap1LeftMatrix, SCALE_LARGE);
+		      lap1RightMatrix = mat4.scale(lap1RightMatrix, SCALE_LARGE);	
+		      
+		      
+	      
+		  }
+		  if (which_object === "leg2"||which_object==="legs"){
+			lap2LeftMatrix = mat4.scale(lap2LeftMatrix, SCALE_LARGE);
+		      lap2RightMatrix = mat4.scale(lap2RightMatrix, SCALE_LARGE);
+		}
+		  if (which_object === "leg3"||which_object==="legs"){
+			lap3LeftMatrix = mat4.scale(lap3LeftMatrix, SCALE_LARGE);
+		      lap3RightMatrix = mat4.scale(lap3RightMatrix, SCALE_LARGE);
+		}
+		if (which_object === "pliers"){
+		      plierLeftMatrix = mat4.scale(plierLeftMatrix, SCALE_LARGE);
+		      plierRightMatrix = mat4.scale(plierRightMatrix, SCALE_LARGE);
+
+		}
+		
+		  if (which_object === "feet1"||which_object==="feet") {
+			console.log("ac ff");
+		      foot1LeftMatrix = mat4.scale(foot1LeftMatrix, SCALE_LARGE);
+		      foot1RightMatrix = mat4.scale(foot1RightMatrix, SCALE_LARGE);	
+		     
+      
+		  }
+              	if (which_object === "feet2"||which_object==="feet")
+		{
+ 			foot2LeftMatrix = mat4.scale(foot2LeftMatrix, SCALE_LARGE);
+		      foot2RightMatrix = mat4.scale(foot2RightMatrix, SCALE_LARGE);
+
+		}
+		  if (which_object === "feet3"||which_object==="feet")  
+		{
+		      foot3LeftMatrix = mat4.scale(foot3LeftMatrix, SCALE_LARGE);
+		      foot3RightMatrix = mat4.scale(foot3RightMatrix, SCALE_LARGE);	
+
+		}
+              
+		 
+		  
+              
+              break; 
+	      case 83:
+	//press s to make smaller
+		if (which_object === "all")  {
+		      bodyMatrix = mat4.scale(bodyMatrix, SCALE_SMALL);
+		  }
+		  if (which_object === "leg1"||which_object==="legs") {
+		      lap1LeftMatrix = mat4.scale(lap1LeftMatrix,SCALE_SMALL);
+		      lap1RightMatrix = mat4.scale(lap1RightMatrix,SCALE_SMALL);	
+		      
+		      
+	      
+		  }
+		  if (which_object === "leg2"||which_object==="legs"){
+			lap2LeftMatrix = mat4.scale(lap2LeftMatrix, SCALE_SMALL);
+		      lap2RightMatrix = mat4.scale(lap2RightMatrix,SCALE_SMALL);
+		}
+		  if (which_object === "leg3"||which_object==="legs"){
+			lap3LeftMatrix = mat4.scale(lap3LeftMatrix, SCALE_SMALL);
+		      lap3RightMatrix = mat4.scale(lap3RightMatrix, SCALE_SMALL);
+		}
+		if (which_object === "pliers"){
+		      plierLeftMatrix = mat4.scale(plierLeftMatrix, SCALE_SMALL);
+		      plierRightMatrix = mat4.scale(plierRightMatrix, SCALE_SMALL);
+
+		}
+		
+		  if (which_object === "feet1"||which_object==="feet") {
+		      foot1LeftMatrix = mat4.scale(foot1LeftMatrix, SCALE_SMALL);
+		      foot1RightMatrix = mat4.scale(foot1RightMatrix,SCALE_SMALL);	
+		     
+      
+		  }
+              	if (which_object === "feet2"||which_object==="feet")
+		{
+ 			foot2LeftMatrix = mat4.scale(foot2LeftMatrix, SCALE_SMALL);
+		      foot2RightMatrix = mat4.scale(foot2RightMatrix, SCALE_SMALL);
+
+		}
+		  if (which_object === "feet3"||which_object==="feet")  
+		{
+		      foot3LeftMatrix = mat4.scale(foot3LeftMatrix, SCALE_SMALL);
+		      foot3RightMatrix = mat4.scale(foot3RightMatrix,SCALE_SMALL);	
+
+		}
+	      break;
+	      case 70:
+		//press F to move forward
+		bodyMatrix = mat4.translate(bodyMatrix, [0, -0.1, 0]);	
+		break;
+		case 66:
+		//press B to move backward
+		bodyMatrix = mat4.translate(bodyMatrix, [0, 0.1, 0]);	
+		break;
+		case 76:
+		//press L to move left
+		bodyMatrix = mat4.translate(bodyMatrix, [-0.1, 0, 0]);	
+		break;
+		case 82:
+		//press R to move right
+		bodyMatrix = mat4.translate(bodyMatrix, [0.1, 0, 0]);	
+		break;
+	}
+	drawScene();
+ 
+    }
+    ///////////////////////////////////////////////////////////////
+
+    function webGLStart() {
+        var canvas = document.getElementById("code04-canvas");
+        initGL(canvas);
+        initShaders();
+
+        shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+
+        shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+        gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+
+        shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+	shaderProgram.whatever = 4;
+	shaderProgram.whatever2 = 3; 
+
+
+        
+	initBodyBuffer();
+	lap1VertexPositionBuffer=initLapBuffer(); 
+	lap2VertexPositionBuffer=initLapBuffer();
+	lap3VertexPositionBuffer=initLapBuffer();
+	foot1VertexPositionBuffer=initFootBuffer(); 
+	foot2VertexPositionBuffer=initFootBuffer();
+	foot3VertexPositionBuffer=initFootBuffer();
+	plierVertexPositionBuffer=initPliersBuffer();
+	initSeaStarBuffer();
+	initShellBuffer();
+
+        gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
+	document.addEventListener('mousedown', onDocumentMouseDown,false);
+	document.addEventListener('keydown', onKeyDown, false);
+
+	bodyMatrix = mat4.create(); 
+	mat4.identity(bodyMatrix);
+
+	lap1LeftMatrix = mat4.create(); 
+        mat4.identity(lap1LeftMatrix);
+
+	foot1LeftMatrix = mat4.create(); 
+        mat4.identity(foot1LeftMatrix);
+
+	lap1RightMatrix = mat4.create(); 
+        mat4.identity(lap1RightMatrix);
+
+	foot1RightMatrix = mat4.create(); 
+        mat4.identity(foot1RightMatrix);
+
+	lap2LeftMatrix = mat4.create(); 
+        mat4.identity(lap2LeftMatrix);
+
+	lap3LeftMatrix = mat4.create(); 
+        mat4.identity(lap3LeftMatrix);	
+
+	lap2RightMatrix = mat4.create(); 
+        mat4.identity(lap2RightMatrix);
+
+	lap3RightMatrix = mat4.create(); 
+        mat4.identity(lap3RightMatrix);
+
+	foot2LeftMatrix = mat4.create(); 
+        mat4.identity(foot2LeftMatrix);
+
+	foot3LeftMatrix = mat4.create(); 
+        mat4.identity(foot3LeftMatrix);
+
+	foot2RightMatrix = mat4.create(); 
+        mat4.identity(foot2RightMatrix);
+	foot3RightMatrix = mat4.create(); 
+        mat4.identity(foot3RightMatrix);
+
+
+	plierLeftMatrix = mat4.create(); 
+        mat4.identity(plierLeftMatrix);	
+
+	plierRightMatrix = mat4.create(); 
+        mat4.identity(plierRightMatrix);
+
+	seaStarMatrix=mat4.create();
+	mat4.identity(seaStarMatrix);
+	
+	shellMatrix=mat4.create();
+	mat4.identity(shellMatrix);
+	
+	initialMvMatrix()	
+        drawScene();
+    }
+
+
+function redraw() {
+
+    mat4.identity(bodyMatrix);
+    mat4.identity(lap1LeftMatrix);
+    mat4.identity(foot1LeftMatrix);
+    mat4.identity(lap1RightMatrix);
+    mat4.identity(foot1RightMatrix);    
+    mat4.identity(lap2LeftMatrix);
+    mat4.identity(lap3LeftMatrix);
+    mat4.identity(lap2RightMatrix);
+    mat4.identity(lap3RightMatrix);
+    mat4.identity(foot2LeftMatrix);
+    mat4.identity(foot3LeftMatrix);
+    mat4.identity(foot2RightMatrix);  
+    mat4.identity(foot3RightMatrix);  
+    mat4.identity(plierLeftMatrix);
+    mat4.identity(plierRightMatrix);
+    mat4.identity(seaStarMatrix); 
+    mat4.identity(shellMatrix);
+    drawScene();
+}
+
+function obj(object_id) {
+
+    which_object = object_id;
+    drawScene();
+
+} 

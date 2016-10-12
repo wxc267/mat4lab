@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>CSE5542 - Lab2 </title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+
+<!--  ************** Fragment Shader ************* --> 
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 vColor; 
+
+void main(void) {
+        gl_FragColor = vColor; 
+    }
+</script>
+
+<!--  ************** Vertex Shader ************* --> 
+<script id="shader-vs" type="x-shader/x-vertex">
+
+    attribute vec3 aVertexPosition;
+    attribute vec4 aVertexColor;
+    varying vec4 vColor;
+
+    uniform mat4 uMVMatrix;
+
+    void main(void) {
+
+      gl_PointSize = 10.0; 
+      gl_Position = uMVMatrix*vec4(aVertexPosition, 1.0);
+
+      vColor = aVertexColor; 
+    }
+</script>
+
+
+<script type="text/javascript" src="shaders_setup.js"></script>
+<script type="text/javascript" src="lab2.js"></script>
+
+
+</head>
+
+
+<body onload="webGLStart();">
+
+    <canvas id="code04-canvas"style="border:none;"width="700"height="700"></canvas>
+
+
+    <h4> Body Parts:  </h4>
+    <button  onclick="obj('all')"> All</button>
+    <h4>Legs:</h4>
+    <button onclick="obj('legs')">All Legs</button>
+    <button onlick="obj('feet')">All feet</button>
+    <h5>First Row:<h5>
+    <button onclick="obj('leg1')">Legs</button>
+    <button onlick="obj('feet1')">feet</button>
+    <h5>Second Row:<h5>
+    <button onclick="obj('leg2')">Legs</button>
+    <button onlick="obj('feet2')">feet</button>
+    <h5>Third Row:<h5>
+    <button onclick="obj('leg3')">Legs</button>
+    <button onlick="obj('feet3')">feet</button>
+    <h3>Pliers:<h4>
+    <button onclick="obj('pliers')">Pliers</button>
+
+<h4>
+For scaling and rotation only:the feet depends on the legs and both of the legs and pliers depend on the body.
+For moving: all parts of body move.
+</h4>
+
+     <h4>
+      - Click on the left mouse button and move the coursor to rotate
+    </h4>
+
+    </h4>
+    <button  onclick="redraw()">Reset</button>
+    </div>
+
+
+</body>
+
+
+</html>
+
